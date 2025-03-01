@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@types/selenium-webdriver": "^4.1.28",
+    "chromedriver": "^133.0.3",
+    "selenium-webdriver": "^4.27.0"
+  }
+}
