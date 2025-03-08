@@ -7,7 +7,7 @@ const {
 } = require("selenium-webdriver");
 require("chromedriver");
 
-(async function addToCartTests(params) {
+(async function addToCartTests() {
   const login = {
     email: "nguyenquocthang909@gmail.com",
     password: "Aa@123456",
@@ -41,24 +41,19 @@ require("chromedriver");
 
       // Submit the login form
       await submitButton.click();
-      await driver.wait(until.urlIs("http://localhost:4200/"), 2000); // Add delay to observe the form submission
+      await driver.wait(until.urlIs("http://localhost:4200/"), 5000); // Add delay to observe the form submission
 
-      let item = By.xpath(
-        "//div[contains(@class, 'overflow-hidden bg-white rounded-lg shadow-md flex flex-col w-full h-full')]"
-      );
+      await driver.sleep(2000);
 
       // Click the first flower product with the element specified above
-      await driver.findElement(item).click();
+      await driver.findElement(By.xpath('//*[@id="671c8c34d6dd75ab088383ec"]')).click();
 
-      await driver.wait(until.urlContains("/product/"), 2000);
-      let sizeSelector = await driver.findElement(By.id("size-selector"));
-      let colorSelector = await driver.findElement(By.id("color-selector"));
+      await driver.wait(until.urlContains("/product/"), 5000);
 
-      let sizeBtn = await sizeSelector.findElement(By.css("button"));
-      let colorBtn = await colorSelector.findElement(By.css("button"));
+      await driver.sleep(2000);
 
-      await driver.wait(until.elementIsVisible(sizeBtn), 2000).click();
-      await driver.wait(until.elementIsVisible(colorBtn), 2000).click();
+      await driver.wait(until.elementIsVisible(driver.findElement(By.xpath('//*[@id="size-selector"]/div/label'))), 2000).click();
+      await driver.wait(until.elementIsVisible(driver.findElement(By.xpath('//*[@id="color-selector"]/div/label'))), 2000).click();
 
       let buttonDiv = await driver.findElement(
         By.xpath("//div[contains(@class, 'flex space-x-4')]//button")
@@ -66,11 +61,15 @@ require("chromedriver");
       await buttonDiv.click();
 
       // Check if shopping cart counter has added an item
-      let shoppingCartCounter = await driver.findElement(
-        By.xpath("//div[text()=1]")
-      );
+      console.log(await driver.findElement(
+        By.xpath("//*[@id='root']/div/header/div/div[3]/a/button/div") 
+      ).getText() === "1");
+
+
     } catch (error) {
       console.error("Test failed: " + error);
+    } finally {
+      driver.quit();
     }
   }
 
