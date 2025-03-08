@@ -94,7 +94,6 @@ const ProductController = ({
           value={selectedSize ?? ""}
           onValueChange={handleSizeChange}
           className="flex space-x-2"
-          id="size-selector"
         >
           {uniqueSizes?.map((size) => (
             <div key={size._id}>
@@ -125,7 +124,6 @@ const ProductController = ({
           value={selectedColor ?? ""}
           onValueChange={handleColorChange}
           className="flex space-x-2"
-          id="color-selector"
         >
           {uniqueColors.map((color) => (
             <div key={color._id}>

@@ -14,17 +14,20 @@ import path from "@/configs/path.config";
 import { useAuth } from "@/contexts/auth.context";
 import { removeAccessTokenFromLS } from "@/utils/auth.util";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import coupon from "@/assets/coupon.png";
 import home from "@/assets/home.gif";
 import aboutus from "@/assets/documents.gif";
 import holicolor from "@/assets/holi-colors.gif";
-// import event from "@/assets/event.gif";
+import event from "@/assets/event.gif";
 import love from "@/assets/kpop.gif";
 import Logo from "@/assets/LogoProject.png";
 const HeaderLayout = () => {
   const { isAuthenticated, setIsAuthenticated } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { data } = useQuery({
     queryKey: ["me"],
@@ -67,8 +70,24 @@ const HeaderLayout = () => {
               type="text"
               placeholder="Tìm kiếm sản phẩm..."
               className="w-64 py-2 pl-10 pr-4 border rounded-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && searchTerm.trim()) {
+                  navigate(`/?search=${encodeURIComponent(searchTerm.trim())}`);
+                }
+              }}
             />
-            <Search className="absolute text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
+            <button
+              onClick={() => {
+                if (searchTerm.trim()) {
+                  navigate(`/?search=${encodeURIComponent(searchTerm.trim())}`);
+                }
+              }}
+              className="absolute text-gray-400 transform -translate-y-1/2 right-3 top-1/2 cursor-pointer"
+            >
+              <Search className="" />
+            </button>
           </div>
           <section className="flex items-center justify-center w-full h-header">
             <Link
@@ -117,7 +136,7 @@ const HeaderLayout = () => {
                   Hoa sự kiện
                 </Button>
               </DropdownMenuTrigger>
-              {/* <img src={event} alt="Holi Color" className="p-0 m-0 w-8 h-8" /> */}
+              <img src={event} alt="Holi Color" className="p-0 m-0 w-8 h-8" />
             </div>
             <DropdownMenuContent className="w-56 bg-white border shadow-md">
               <DropdownMenuSeparator />

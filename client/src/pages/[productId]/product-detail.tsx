@@ -199,7 +199,7 @@ const ProductDetail = () => {
             />
 
             <div className="flex space-x-4">
-              <Button className="flex-1 bg-green-900" id="add-to-cart" onClick={() => handleAddToCart()}>
+              <Button className="flex-1 bg-green-900" onClick={() => handleAddToCart()}>
                 <ShoppingCart className="w-4 h-4 mr-2" /> Thêm vào giỏ hàng
               </Button>
               {/* <Button variant="secondary" className="flex-1">

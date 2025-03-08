@@ -40,4 +40,7 @@ router.patch('/cart', wrapRequestHandler(verifyToken), wrapRequestHandler(cartCo
 // delete product in cart
 router.delete('/cart', wrapRequestHandler(verifyToken), wrapRequestHandler(cartController.deleteProductInCart));
 
+// clear cart
+router.delete('/cart/clear', wrapRequestHandler(verifyToken), wrapRequestHandler(cartController.clearCart));
+
 export default router;
