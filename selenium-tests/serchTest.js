@@ -4,13 +4,37 @@ require("chromedriver");
 (async function loginTests() {
   let textFields = [
     {
-      text: "Flower",
+      text: "dior",
     },
     {
-      text: "Flower dior",
+      text: "gucci",
     },
     {
-      text: "Flower gucci",
+      text: "Hoa",
+    },
+    {
+      text: "tươi",
+    },
+    {
+      text: "đen",
+    },
+    {
+      text: "đỏ",
+    },
+    {
+      text: "bó",
+    },
+    {
+      text: "10",
+    },
+    {
+      text: "1",
+    },
+    {
+      text: "5",
+    },
+    {
+      text: "$",
     },
   ];
 
@@ -18,14 +42,18 @@ require("chromedriver");
     let driver = await new Builder().forBrowser("chrome").build();
     try {
       // Navigate to   the login page
-      await driver.get("http://localhost:3000/products?_page=1&_limit=8&tab=1");
-
-      let serchField = await driver.findElement(By.css('input.ant-input[placeholder="Search for product"]'));
+      await driver.get("http://localhost:4200");
+      await driver.sleep(500);
+      let serchField = await driver.findElement(By.css("input.w-64.py-2.pl-10.pr-4.border.rounded-full"));
       await serchField.sendKeys(textField.text);
-      await serchField.sendKeys(Key.ENTER);
-      await driver.sleep(10000);
-      console.log("testcase: " + textField.text);
-      await driver.sleep(10000);
+      await driver.sleep(500);
+
+      let submitButton = await driver.findElement(By.css("button.absolute.text-gray-400"));
+      await submitButton.click();
+
+      await driver.sleep(500);
+
+      await driver.wait(until.elementLocated(By.css(".ant-card-meta-title")), 5000);
     } catch (error) {
       console.error("Test failed with error:", error);
     } finally {
