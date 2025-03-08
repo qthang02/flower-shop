@@ -19,7 +19,7 @@ import coupon from "@/assets/coupon.png";
 import home from "@/assets/home.gif";
 import aboutus from "@/assets/documents.gif";
 import holicolor from "@/assets/holi-colors.gif";
-import event from "@/assets/event.gif";
+// import event from "@/assets/event.gif";
 import love from "@/assets/kpop.gif";
 import Logo from "@/assets/LogoProject.png";
 const HeaderLayout = () => {
@@ -117,7 +117,7 @@ const HeaderLayout = () => {
                   Hoa sự kiện
                 </Button>
               </DropdownMenuTrigger>
-              <img src={event} alt="Holi Color" className="p-0 m-0 w-8 h-8" />
+              {/* <img src={event} alt="Holi Color" className="p-0 m-0 w-8 h-8" /> */}
             </div>
             <DropdownMenuContent className="w-56 bg-white border shadow-md">
               <DropdownMenuSeparator />
