@@ -1,4 +1,4 @@
-import { Link, createSearchParams } from "react-router-dom";
+import { Link, createSearchParams, useNavigate } from "react-router-dom";
 
 import { Slider } from "@/components/ui/slider";
 import { brandApi } from "@/api/brand.api";
@@ -7,11 +7,17 @@ import path from "@/configs/path.config";
 import { useQuery } from "@tanstack/react-query";
 import { useQueryParams } from "@/hooks/useQueryParams";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const Aside = () => {
   const params = useQueryParams();
+  const navigate = useNavigate();
 
-  const [priceRange, setPriceRange] = useState([0, 1000]);
+  // Initialize price range from URL params or default values (using VND)
+  const [priceRange, setPriceRange] = useState([
+    params.min_price ? parseInt(params.min_price as string) : 0,
+    params.max_price ? parseInt(params.max_price as string) : 20000000
+  ]);
 
   // get all categories
   const { data } = useQuery({
@@ -101,17 +107,32 @@ const Aside = () => {
         <div>
           <h3 className="mb-2 text-lg font-semibold text-green-900">Giá sản phẩm</h3>
           <Slider
-            defaultValue={[0, 1000]}
-            max={1000}
-            step={1}
+            defaultValue={[0, 20000000]}
+            max={20000000}
+            step={100000}
             value={priceRange}
             onValueChange={setPriceRange}
             className="mb-2"
           />
-          <div className="flex justify-between">
-            <span>${priceRange[0]}</span>
-            <span>${priceRange[1]}</span>
+          <div className="flex justify-between mb-3">
+            <span>{priceRange[0].toLocaleString()}₫</span>
+            <span>{priceRange[1].toLocaleString()}₫</span>
           </div>
+          <Button 
+            onClick={() => {
+              navigate({
+                pathname: path.home,
+                search: createSearchParams({
+                  ...params,
+                  min_price: priceRange[0].toString(),
+                  max_price: priceRange[1].toString()
+                }).toString()
+              });
+            }}
+            className="w-full bg-green-800 hover:bg-green-900"
+          >
+            Áp dụng lọc giá
+          </Button>
         </div>
       </div>
     </aside>
