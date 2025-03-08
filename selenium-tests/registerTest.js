@@ -4,7 +4,7 @@ require('chromedriver');
 (async function registerTests() {
     let testCases = [
         {
-            email: 'testuser@gmail.com',
+            email: 'testuser1@gmail.com',
             password: 'password123',
             confirmPassword: 'password123',
             expectedMessage: 'Registration successful',
