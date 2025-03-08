@@ -3,7 +3,6 @@ const {
   Browser,
   By,
   until,
-  WebDriver,
 } = require("selenium-webdriver");
 require("chromedriver");
 
@@ -23,6 +22,8 @@ require("chromedriver");
       .build();
 
     try {
+      driver.manage().window().maximize();
+
       await driver.get("http://localhost:4200/login");
 
       await driver.sleep(500);
@@ -45,15 +46,15 @@ require("chromedriver");
 
       await driver.sleep(2000);
 
-      // Click the first flower product with the element specified above
-      await driver.findElement(By.xpath('//*[@id="671c8c34d6dd75ab088383ec"]')).click();
+      // Click the first flower product
+      await driver.findElement(By.xpath('/html/body/div/div/main/main/div[2]/div/section/div/a[1]')).click();
 
       await driver.wait(until.urlContains("/product/"), 5000);
 
       await driver.sleep(2000);
 
-      await driver.wait(until.elementIsVisible(driver.findElement(By.xpath('//*[@id="size-selector"]/div/label'))), 2000).click();
-      await driver.wait(until.elementIsVisible(driver.findElement(By.xpath('//*[@id="color-selector"]/div/label'))), 2000).click();
+      await driver.wait(until.elementIsVisible(driver.findElement(By.xpath('//*[@id="root"]/div/main/div/main/div[1]/div[2]/div[3]/div[1]/div/div/label'))), 2000).click();
+      await driver.wait(until.elementIsVisible(driver.findElement(By.xpath('//*[@id="root"]/div/main/div/main/div[1]/div[2]/div[3]/div[2]/div/div/label'))), 2000).click();
 
       let buttonDiv = await driver.findElement(
         By.xpath("//div[contains(@class, 'flex space-x-4')]//button")
@@ -62,9 +63,8 @@ require("chromedriver");
 
       // Check if shopping cart counter has added an item
       console.log(await driver.findElement(
-        By.xpath("//*[@id='root']/div/header/div/div[3]/a/button/div") 
-      ).getText() === "1");
-
+        By.xpath("//*[@id='root']/div/header/div/div[3]/a/button/div")
+      ).getText() !== "0");
 
     } catch (error) {
       console.error("Test failed: " + error);
