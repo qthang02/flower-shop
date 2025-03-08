@@ -30,4 +30,11 @@ export const cartApi = {
 		});
 		return response.data;
 	},
+	// clear cart
+	clearCart: async (userId: string) => {
+		const response = await http.delete(`/cart/clear`, {
+			params: { userId }
+		});
+		return response.data;
+	},
 };

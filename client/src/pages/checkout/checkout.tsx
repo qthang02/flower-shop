@@ -1,5 +1,6 @@
 import { orderApi } from "@/api/order.api";
 import { userApi } from "@/api/user.api";
+import { cartApi } from "@/api/cart.api";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
@@ -25,11 +26,11 @@ import FormUser, {
   FormUserType,
 } from "@/pages/checkout/components/form-user";
 import ListVoucher from "./components/list-voucher";
-import { useAppSelector } from "@/stores/hook";
+import { useAppDispatch, useAppSelector } from "@/stores/hook";
 import { Button } from "antd";
+import { clearCart } from "@/stores/features/cart/cart-slice";
 
 const FEE_SHIPPING = 3000;
-
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleVNpay = async (data: any, paymentMethod: string) => {
@@ -74,7 +75,8 @@ const handleVNpay = async (data: any, paymentMethod: string) => {
     }
     return; // Kết thúc nếu chọn VNPay
   }
-}
+};
+
 const Checkout = () => {
   const { status } = useQueryParams();
   const navigate = useNavigate();
@@ -107,7 +109,6 @@ const Checkout = () => {
     }, 0);
     return totalProductChecked;
   }, [cartItems]);
-  
 
   useEffect(() => {
     (async () => {
@@ -147,6 +148,9 @@ const Checkout = () => {
     mutationKey: ["create-order"],
     mutationFn: (body: TCreateOrder) => orderApi.createOrder(body),
   });
+
+  const dispatch = useAppDispatch();
+
   // useEffect()
   // handle submit form user
   const onSubmit = async (values: FormUserType) => {
@@ -175,9 +179,21 @@ const Checkout = () => {
     console.log(data);
     // call api
     createOrderMutation.mutate(data, {
-      onSuccess: () => {
+      onSuccess: async () => {
         toast.success("Create order success!");
-        handleVNpay(data, paymentMethod)
+
+        // Clear the cart after successful order
+        if (myInfo?._id) {
+          try {
+            await cartApi.clearCart(myInfo._id);
+            // Clear cart in Redux store
+            dispatch(clearCart());
+          } catch (error) {
+            console.error("Failed to clear cart:", error);
+          }
+        }
+
+        handleVNpay(data, paymentMethod);
         navigate({
           pathname: path.checkout,
           search: createSearchParams({
@@ -189,7 +205,6 @@ const Checkout = () => {
         toast.error("Create order failed!");
       },
     });
-    
   };
 
   return (

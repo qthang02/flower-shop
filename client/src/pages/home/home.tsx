@@ -83,7 +83,7 @@ const HomePage = () => {
         <div className="lg:w-9/12 w-full">
           <section>
             <p className="text-lg font-semibold text-green-900">Các sản phẩm nổi bật</p>
-            <div id="flower-list" className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4 lg:grid-cols-3 mt-4">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4 lg:grid-cols-3 mt-4">
               {products &&
                 products.length > 0 &&
                 products.map((product) => {

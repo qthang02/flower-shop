@@ -33,4 +33,12 @@ export const cartService = {
 
     return newCart.save();
   },
+  // clearCart - clear all products in cart for a user
+  clearCart: async (userId) => {
+    return Cart.findOneAndUpdate(
+      { userId },
+      { $set: { carts: [] } },
+      { new: true }
+    );
+  },
 };

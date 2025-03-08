@@ -476,4 +476,42 @@ export const cartController = {
       success: true,
     });
   },
+
+  // clear cart
+  clearCart: async (req, res) => {
+    try {
+      const { _id } = req.user;
+      const { userId } = req.query;
+
+      // check userId gửi lên có trùng với userId trong token không
+      if (userId !== _id) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          message: 'Unauthorized',
+          success: false,
+        });
+      }
+
+      // check user tồn tại hay không
+      const userExist = await checkUserExist(userId);
+      if (!userExist) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          message: 'User not found',
+          success: false,
+        });
+      }
+
+      // clear cart
+      await cartService.clearCart(userId);
+
+      return res.status(HTTP_STATUS.OK).json({
+        message: 'Clear cart successfully',
+        success: true,
+      });
+    } catch (error) {
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+        message: error.message,
+        success: false,
+      });
+    }
+  },
 };
