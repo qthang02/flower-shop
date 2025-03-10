@@ -1,9 +1,4 @@
-const {
-  Builder,
-  Browser,
-  By,
-  until,
-} = require("selenium-webdriver");
+const { Builder, Browser, By, until } = require("selenium-webdriver");
 require("chromedriver");
 
 (async function addToCartTests() {
@@ -15,11 +10,8 @@ require("chromedriver");
     description: "Login with valid email and correct password",
   };
 
-  async function runCartTests(login) {
-    let driver = await new Builder()
-      .forBrowser(Browser.CHROME)
-      .setChromeService()
-      .build();
+  async function runAddToCartTests(login) {
+    let driver = await new Builder().forBrowser(Browser.CHROME).build();
 
     try {
       driver.manage().window().maximize();
@@ -42,30 +34,71 @@ require("chromedriver");
 
       // Submit the login form
       await submitButton.click();
-      await driver.wait(until.urlIs("http://localhost:4200/"), 5000); // Add delay to observe the form submission
+      await driver.wait(until.urlIs("http://localhost:4200/"), 1000); // Add delay to observe the form submission
 
-      await driver.sleep(2000);
+      await driver.sleep(500);
 
-      // Click the first flower product
-      await driver.findElement(By.xpath('/html/body/div/div/main/main/div[2]/div/section/div/a[1]')).click();
-
-      await driver.wait(until.urlContains("/product/"), 5000);
-
-      await driver.sleep(2000);
-
-      await driver.wait(until.elementIsVisible(driver.findElement(By.xpath('//*[@id="root"]/div/main/div/main/div[1]/div[2]/div[3]/div[1]/div/div/label'))), 2000).click();
-      await driver.wait(until.elementIsVisible(driver.findElement(By.xpath('//*[@id="root"]/div/main/div/main/div[1]/div[2]/div[3]/div[2]/div/div/label'))), 2000).click();
-
-      let buttonDiv = await driver.findElement(
-        By.xpath("//div[contains(@class, 'flex space-x-4')]//button")
+      const productList = await driver.findElement(
+        By.css("div > section div.grid")
       );
-      await buttonDiv.click();
+      const products = await productList.findElements(By.css("a"));
 
-      // Check if shopping cart counter has added an item
-      console.log(await driver.findElement(
-        By.xpath("//*[@id='root']/div/header/div/div[3]/a/button/div")
-      ).getText() !== "0");
+      // Go to a random flower page
+      const rng = Math.floor(Math.random() * products.length);
+      await products[rng].click();
 
+      await driver.wait(until.urlContains("/product/"), 1000);
+
+      await driver.sleep(500);
+
+      const productSelectors = await driver.findElement(
+        By.css("div.space-y-6 > div.space-y-4")
+      );
+      const sizeSelector = By.css("div div label[for^='size']");
+      const colorSelector = By.css("div div label[for^='color']");
+      const addToCartButton = By.xpath(
+        "//*[@id='root']/div/main/div/main/div[1]/div[2]/div[4]/button"
+      );
+
+      await productSelectors.findElement(sizeSelector).click();
+      await productSelectors.findElement(colorSelector).click();
+
+      await driver.findElement(addToCartButton).click();
+
+      await driver.sleep(500);
+
+      const shoppingCart = By.css(
+        "div.flex.items-center > a[href='/cart'] button"
+      );
+
+      const regex = /[^0]/;
+
+      // Check if shopping cart badge is not empty
+      await driver
+        .wait(
+          until.elementTextMatches(
+            await driver.findElement(shoppingCart),
+            regex
+          ),
+          1000,
+          "No item in the shopping cart"
+        )
+        .click();
+
+      await driver.wait(until.urlIs("http://localhost:4200/cart"), 1000);
+
+      await driver.sleep(500);
+
+      const cartList = await driver.findElement(
+        By.xpath("//*[@id='root']/div/main/div/div/div[1]")
+      );
+      const cartItems = await cartList.findElements(
+        By.css("div.flex.items-center.py-4.border-b")
+      );
+
+      for (const item of cartItems) {
+        await driver.wait(until.elementIsVisible(item), 1000)
+      }
     } catch (error) {
       console.error("Test failed: " + error);
     } finally {
@@ -73,5 +106,5 @@ require("chromedriver");
     }
   }
 
-  await runCartTests(login);
+  await runAddToCartTests(login);
 })();
