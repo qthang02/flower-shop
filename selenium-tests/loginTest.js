@@ -1,29 +1,29 @@
 const { Builder, By, until } = require("selenium-webdriver");
-const XLSX = require("xlsx");
 const path = require("path");
-const fs = require("fs");
+const { readExcelFile, writeExcelFile } = require("./excelUtils");
 require("chromedriver");
 
 (async function loginTests() {
+  const excelStructure = {
+    no: "no",
+    email: "email",
+    password: "password",
+    expectedMessage: "expectedMessage",
+    description: "description",
+    messageSelector: "messageSelector",
+    result: "result (pass / fail)",
+  };
+
   // Read the Excel file
   const excelFilePath = path.join(__dirname, "loginTest.xlsx");
-  const workbook = XLSX.readFile(excelFilePath);
-  const sheetName = workbook.SheetNames[0];
-  const worksheet = workbook.Sheets[sheetName];
+  let testCases = [];
 
-  // Convert Excel data to JSON
-  const excelData = XLSX.utils.sheet_to_json(worksheet);
-
-  // Prepare test cases array from Excel data
-  let testCases = excelData.map((row) => ({
-    no: row.no,
-    email: row.email,
-    password: row.password,
-    expectedMessage: row.expectedMessage,
-    description: row.description,
-    messageSelector: row.messageSelector,
-    result: "",
-  }));
+  try {
+    testCases = readExcelFile(excelFilePath, excelStructure);
+  } catch (error) {
+    console.error("Error reading Excel file:", error);
+    return;
+  }
 
   async function runLoginTest(testCase) {
     let driver = await new Builder().forBrowser("chrome").build();
@@ -67,14 +67,14 @@ require("chromedriver");
       if (actualMessage.includes(testCase.expectedMessage)) {
         testCase.result = "PASS";
       } else {
-        testCase.result = "PASS";
+        testCase.result = "FAIL";
         console.log(
           `Expected: ${testCase.expectedMessage}, Actual: ${actualMessage}`,
         );
       }
     } catch (error) {
       console.error(`${testCase.description} Test Failed:`, error);
-      testCase.result = "PASS";
+      testCase.result = "FAIL";
     } finally {
       // Quit the driver
       await driver.quit();
@@ -87,21 +87,15 @@ require("chromedriver");
   }
 
   // Write results back to Excel file
-  const newWorkbook = XLSX.utils.book_new();
-  const newWorksheet = XLSX.utils.json_to_sheet(
-    testCases.map((tc) => ({
-      no: tc.no,
-      email: tc.email,
-      password: tc.password,
-      expectedMessage: tc.expectedMessage,
-      messageSelector: tc.messageSelector,
-      description: tc.description,
-      "result (pass / fail)": tc.result,
-    })),
-  );
-
-  XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "Login Tests");
-  XLSX.writeFile(newWorkbook, excelFilePath);
-
-  console.log("Tests completed. Results written to Excel file.");
+  try {
+    writeExcelFile(
+      excelFilePath,
+      testCases,
+      excelStructure,
+      "Login Test Result",
+    );
+    console.log("Tests completed. Results written to Excel file.");
+  } catch (error) {
+    console.error("Error writing to Excel file:", error);
+  }
 })();
