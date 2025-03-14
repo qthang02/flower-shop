@@ -94,6 +94,7 @@ require("chromedriver");
       email: tc.email,
       password: tc.password,
       expectedMessage: tc.expectedMessage,
+      messageSelector: tc.messageSelector,
       description: tc.description,
       "result (pass / fail)": tc.result,
     })),
