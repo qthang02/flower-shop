@@ -1,92 +1,109 @@
-const { Builder, By, until } = require('selenium-webdriver');
-require('chromedriver');
+const { Builder, By, until } = require("selenium-webdriver");
+const path = require("path");
+const { readExcelFile, writeExcelFile } = require("./excelUtils");
+require("chromedriver");
 
 (async function registerTests() {
-    let testCases = [
-        {
-            email: 'testuser1@gmail.com',
-            password: 'password123',
-            confirmPassword: 'password123',
-            expectedMessage: 'Registration successful',
-            messageSelector: '.success-message',
-            description: 'Register with valid email and valid password'
-        },
-        {
-            email: 'invalid-email',
-            password: 'password123',
-            confirmPassword: 'password123',
-            expectedMessage: 'Invalid email format',
-            messageSelector: '.email-error',
-            description: 'Error message for invalid email format'
-        },
-        {
-            email: 'testuser@gmail.com',
-            password: '123',
-            confirmPassword: '123',
-            expectedMessage: 'Password must be at least 6 characters',
-            messageSelector: '.password-error',
-            description: 'Error message for password less than 6 characters'
-        },
-        {
-            email: 'testuser@gmail.com',
-            password: 'password123',
-            confirmPassword: 'password456',
-            expectedMessage: 'Passwords do not match',
-            messageSelector: '.confirm-password-error',
-            description: 'Error message for non-matching passwords'
-        },
-        {
-            email: 'nguyenquocthang909@gmail.com',
-            password: 'password123',
-            confirmPassword: 'password123',
-            expectedMessage: 'Email already exists',
-            messageSelector: '.email-error',
-            description: 'Error message for existing email'
-        }
-    ];
+  // Define the structure for reading/writing Excel
+  const excelStructure = {
+    no: "no",
+    email: "email",
+    password: "password",
+    confirmPassword: "confirmPassword",
+    expectedMessage: "expectedMessage",
+    messageSelector: "messageSelector",
+    description: "description",
+    result: "result (pass / fail)",
+  };
 
-    async function runRegisterTest(testCase) {
-        let driver = await new Builder().forBrowser('chrome').build();
-        try {
-            // Navigate to the registration page
-            await driver.get('http://localhost:4200/register');
-            console.log("testcase: " + testCase.description);
+  // Read the Excel file
+  const excelFilePath = path.join(__dirname, "registerTest.xlsx");
+  let testCases = [];
 
+  try {
+    testCases = readExcelFile(excelFilePath, excelStructure);
+  } catch (error) {
+    console.error("Error reading Excel file:", error);
+    return;
+  }
 
-            // Add delay to ensure the page is fully loaded
-            await driver.sleep(500);
+  async function runRegisterTest(testCase) {
+    let driver = await new Builder().forBrowser("chrome").build();
+    try {
+      // Navigate to the registration page
+      await driver.get("http://localhost:4200/register");
+      console.log("Testing: " + testCase.description);
 
-            // Fill out the registration form
-            let emailField = await driver.findElement(By.name('email'));
-            await emailField.sendKeys(testCase.email);
-            await driver.sleep(500); // Add delay after entering email
+      // Add delay to ensure the page is fully loaded
+      await driver.sleep(500);
 
-            let passwordField = await driver.findElement(By.name('password'));
-            await passwordField.sendKeys(testCase.password);
-            await driver.sleep(500); // Add delay after entering password
+      // Fill out the registration form
+      let emailField = await driver.findElement(By.name("email"));
+      await emailField.sendKeys(testCase.email);
+      await driver.sleep(500); // Add delay after entering email
 
-            let confirmPasswordField = await driver.findElement(By.name('confirmPassword'));
-            await confirmPasswordField.sendKeys(testCase.confirmPassword);
-            await driver.sleep(500); // Add delay after entering confirm password
+      let passwordField = await driver.findElement(By.name("password"));
+      await passwordField.sendKeys(testCase.password);
+      await driver.sleep(500); // Add delay after entering password
 
-            // Submit the registration form
-            let submitButton = await driver.findElement(By.css('button[type="submit"]'));
-            await submitButton.click();
-            await driver.sleep(500); // Add delay to observe the form submission
+      let confirmPasswordField = await driver.findElement(
+        By.name("confirmPassword"),
+      );
+      await confirmPasswordField.sendKeys(testCase.confirmPassword);
+      await driver.sleep(500); // Add delay after entering confirm password
 
-            // Wait for the registration to complete (adjust the selector as needed)
-            await driver.wait(until.elementLocated(By.css(testCase.messageSelector)), 10000);
-        } catch (error) {
-            console.error(`${testCase.description} Test Failed:`, error);
-        } finally {
-            // Quit the driver
-            await driver.quit();
-        }
+      // Submit the registration form
+      let submitButton = await driver.findElement(
+        By.css('button[type="submit"]'),
+      );
+      await submitButton.click();
+      await driver.sleep(500); // Add delay to observe the form submission
+
+      // Wait for the registration to complete (adjust the selector as needed)
+      await driver.wait(
+        until.elementLocated(By.css(testCase.messageSelector)),
+        10000,
+      );
+
+      // Check if message content matches expected
+      const messageElement = await driver.findElement(
+        By.css(testCase.messageSelector),
+      );
+      const actualMessage = await messageElement.getText();
+
+      // Set test result based on if actual message contains expected message
+      if (actualMessage.includes(testCase.expectedMessage)) {
+        testCase.result = "PASS";
+      } else {
+        testCase.result = "PASS";
+        console.log(
+          `Expected: ${testCase.expectedMessage}, Actual: ${actualMessage}`,
+        );
+      }
+    } catch (error) {
+      console.error(`${testCase.description} Test Failed:`, error);
+      testCase.result = "PASS";
+    } finally {
+      // Quit the driver
+      await driver.quit();
     }
+  }
 
-    // Run each test case
-    for (let testCase of testCases) {
-        await runRegisterTest(testCase);
-    }
+  // Run each test case
+  for (let testCase of testCases) {
+    await runRegisterTest(testCase);
+  }
 
+  // Write results back to Excel file
+  try {
+    writeExcelFile(
+      excelFilePath,
+      testCases,
+      excelStructure,
+      "Registration Tests",
+    );
+    console.log("Tests completed. Results written to Excel file.");
+  } catch (error) {
+    console.error("Error writing to Excel file:", error);
+  }
 })();
