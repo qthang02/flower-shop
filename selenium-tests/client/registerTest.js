@@ -1,21 +1,23 @@
 const { Builder, By, until } = require("selenium-webdriver");
 const path = require("path");
-const { readExcelFile, writeExcelFile } = require("./excelUtils");
+const { readExcelFile, writeExcelFile } = require("../util/excelUtils");
 require("chromedriver");
 
-(async function loginTests() {
+(async function registerTests() {
+  // Define the structure for reading/writing Excel
   const excelStructure = {
     no: "no",
     email: "email",
     password: "password",
+    confirmPassword: "confirmPassword",
     expectedMessage: "expectedMessage",
-    description: "description",
     messageSelector: "messageSelector",
+    description: "description",
     result: "result (pass / fail)",
   };
 
   // Read the Excel file
-  const excelFilePath = path.join(__dirname, "loginTest.xlsx");
+  const excelFilePath = path.join(__dirname, "registerTest.xlsx");
   let testCases = [];
 
   try {
@@ -25,17 +27,17 @@ require("chromedriver");
     return;
   }
 
-  async function runLoginTest(testCase) {
+  async function runRegisterTest(testCase) {
     let driver = await new Builder().forBrowser("chrome").build();
     try {
-      // Navigate to the login page
-      await driver.get("http://localhost:4200/login");
+      // Navigate to the registration page
+      await driver.get("http://localhost:4200/register");
       console.log("Testing: " + testCase.description);
 
       // Add delay to ensure the page is fully loaded
       await driver.sleep(500);
 
-      // Fill out the login form
+      // Fill out the registration form
       let emailField = await driver.findElement(By.name("email"));
       await emailField.sendKeys(testCase.email);
       await driver.sleep(500); // Add delay after entering email
@@ -44,14 +46,20 @@ require("chromedriver");
       await passwordField.sendKeys(testCase.password);
       await driver.sleep(500); // Add delay after entering password
 
-      // Submit the login form
+      let confirmPasswordField = await driver.findElement(
+        By.name("confirmPassword"),
+      );
+      await confirmPasswordField.sendKeys(testCase.confirmPassword);
+      await driver.sleep(500); // Add delay after entering confirm password
+
+      // Submit the registration form
       let submitButton = await driver.findElement(
         By.css('button[type="submit"]'),
       );
       await submitButton.click();
       await driver.sleep(500); // Add delay to observe the form submission
 
-      // Wait for the login to complete and check expected message
+      // Wait for the registration to complete (adjust the selector as needed)
       await driver.wait(
         until.elementLocated(By.css(testCase.messageSelector)),
         10000,
@@ -83,7 +91,7 @@ require("chromedriver");
 
   // Run each test case
   for (let testCase of testCases) {
-    await runLoginTest(testCase);
+    await runRegisterTest(testCase);
   }
 
   // Write results back to Excel file
@@ -92,7 +100,7 @@ require("chromedriver");
       excelFilePath,
       testCases,
       excelStructure,
-      "Login Test Result",
+      "Registration Tests",
     );
     console.log("Tests completed. Results written to Excel file.");
   } catch (error) {
