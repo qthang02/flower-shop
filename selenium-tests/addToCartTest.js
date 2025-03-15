@@ -2,12 +2,9 @@ const { Builder, Browser, By, until } = require("selenium-webdriver");
 require("chromedriver");
 
 (async function addToCartTests() {
-  const login = {
+  const testCase = {
     email: "nguyenquocthang909@gmail.com",
     password: "Aa@123456",
-    expectedMessage: "Welcome, testuser",
-    messageSelector: ".welcome-message",
-    description: "Login with valid email and correct password",
   };
 
   async function runAddToCartTests(login) {
@@ -60,10 +57,34 @@ require("chromedriver");
         "//*[@id='root']/div/main/div/main/div[1]/div[2]/div[4]/button"
       );
 
+      await driver.findElement(addToCartButton).click();
+
+      await driver.sleep(500);
+
+      const sonner = By.css("section[aria-label='Notifications alt+T']");
+
+      await driver.wait(
+        until.elementTextIs(
+          await driver.findElement(By.css(sonner)),
+          "Vui lòng chọn màu sắc, kích cỡ và số lượng"
+        ),
+        1000
+      );
+
       await productSelectors.findElement(sizeSelector).click();
       await productSelectors.findElement(colorSelector).click();
 
       await driver.findElement(addToCartButton).click();
+
+      await driver.sleep(500);
+
+      await driver.wait(
+        until.elementTextIs(
+          await driver.findElement(By.css(sonner)),
+          "Thêm sản phẩm vào giỏ hàng thành công!"
+        ),
+        1000
+      );
 
       await driver.sleep(500);
 
@@ -97,7 +118,7 @@ require("chromedriver");
       );
 
       for (const item of cartItems) {
-        await driver.wait(until.elementIsVisible(item), 1000)
+        await driver.wait(until.elementIsVisible(item), 1000);
       }
     } catch (error) {
       console.error("Test failed: " + error);
@@ -106,5 +127,5 @@ require("chromedriver");
     }
   }
 
-  await runAddToCartTests(login);
+  await runAddToCartTests(testCase);
 })();
