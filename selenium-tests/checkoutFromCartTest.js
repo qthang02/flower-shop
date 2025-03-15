@@ -225,7 +225,13 @@ require("chromedriver");
       await driver.sleep(500);
 
       await paymentMethods[paymentMethodRNG].click();
-      // await coupons[couponRNG].click();
+      const couponValidDate = coupons[couponRNG].findElement(
+        By.css("div.p-6.pt-0.pb-0.flex.justify-between.items-center > button")
+      );
+
+      if ((await couponValidDate.getText()).includes("2025")) {
+        await coupons[couponRNG].click();
+      }
 
       if ((await totalPrice.getText()).startsWith("-")) {
         console.error("Total price shouldn't be lower than 0");
