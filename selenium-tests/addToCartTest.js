@@ -65,7 +65,7 @@ require("chromedriver");
 
       await driver.wait(
         until.elementTextIs(
-          await driver.findElement(By.css(sonner)),
+          await driver.findElement(sonner),
           "Vui lòng chọn màu sắc, kích cỡ và số lượng"
         ),
         1000
@@ -80,7 +80,7 @@ require("chromedriver");
 
       await driver.wait(
         until.elementTextIs(
-          await driver.findElement(By.css(sonner)),
+          await driver.findElement(sonner),
           "Thêm sản phẩm vào giỏ hàng thành công!"
         ),
         1000
