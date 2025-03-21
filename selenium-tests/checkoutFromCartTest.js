@@ -2,6 +2,8 @@ const { Builder, Browser, By, until } = require("selenium-webdriver");
 require("chromedriver");
 
 (async function checkoutFromCartTests() {
+  const excelStructure = { id: "ID", summary: "Summary", expected: "Expected result", actual: "Actual result", status: "Pass/Fail" };
+
   const testCases = [
     {
       firstName: "Quoc Thang",
@@ -189,7 +191,7 @@ require("chromedriver");
       );
       const coupons = await driver.findElements(
         By.css(
-          "div[class='space-y-4 h-[380px] overflow-y-scroll scrollbar-hide'] > div[class$='hover:bg-gray-100']"
+          "div.space-y-6.h-full > div:nth-child(2) > div > div[class$='hover:bg-gray-100']"
         )
       );
 
