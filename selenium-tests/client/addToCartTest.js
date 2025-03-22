@@ -1,11 +1,13 @@
 const { Builder, Browser, By, until } = require("selenium-webdriver");
+const path = require("path");
+const { readExcelFile, writeExcelFile } = require("selenium-tests/util/excelUtils.js");
 require("chromedriver");
 
 (async function addToCartTests() {
   const testCase = {
     email: "nguyenquocthang909@gmail.com",
     password: "Aa@123456",
-  };
+  }; 
 
   async function runAddToCartTests(login) {
     let driver = await new Builder().forBrowser(Browser.CHROME).build();
