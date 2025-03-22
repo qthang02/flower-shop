@@ -1,13 +1,28 @@
 const { Builder, Browser, By, until } = require("selenium-webdriver");
 const path = require("path");
-const { readExcelFile, writeExcelFile } = require("selenium-tests/util/excelUtils.js");
+const { readExcelFile, writeExcelFile } = require("../util/excelUtils");
 require("chromedriver");
 
 (async function addToCartTests() {
-  const testCase = {
-    email: "nguyenquocthang909@gmail.com",
-    password: "Aa@123456",
-  }; 
+  const excelStructure = {
+    id: "ID",
+    email: "Email",
+    password: "Password",
+    summary: "Summary",
+    expected: "Expected result",
+    actual: "Actual result",
+    status: "Pass/Fail",
+  };
+
+  const excelFilePath = path.join(__dirname, "addToCartTest.xlsx");
+  let testCases = [];
+
+  try {
+    testCases = readExcelFile(excelFilePath, excelStructure);
+  } catch (error) {
+    console.error("Error reading Excel file:", error);
+    return;
+  }
 
   async function runAddToCartTests(login) {
     let driver = await new Builder().forBrowser(Browser.CHROME).build();
@@ -16,6 +31,7 @@ require("chromedriver");
       driver.manage().window().maximize();
 
       await driver.get("http://localhost:4200/login");
+      console.log("Testing: " + login.summary);
 
       await driver.sleep(500);
 
@@ -25,10 +41,10 @@ require("chromedriver");
         By.css('button[type="submit"]')
       );
 
-      await emailField.sendKeys(login.email);
+      await emailField.sendKeys(login.email ?? "");
       await driver.sleep(500); // Add delay after entering email
 
-      await passwordField.sendKeys(login.password);
+      await passwordField.sendKeys(login.password ?? "");
       await driver.sleep(500); // Add delay after entering password
 
       // Submit the login form
@@ -48,7 +64,7 @@ require("chromedriver");
 
       await driver.wait(until.urlContains("/product/"), 1000);
 
-      await driver.sleep(500);
+      await driver.sleep(1000);
 
       const productSelectors = await driver.findElement(
         By.css("div.space-y-6 > div.space-y-4")
@@ -78,15 +94,16 @@ require("chromedriver");
 
       await driver.findElement(addToCartButton).click();
 
-      await driver.sleep(500);
+      await driver.sleep(2500);
 
-      await driver.wait(
-        until.elementTextIs(
-          await driver.findElement(sonner),
-          "Thêm sản phẩm vào giỏ hàng thành công!"
-        ),
-        1000
-      );
+      const successSonner = await driver
+        .wait(until.elementIsVisible(driver.findElement(sonner), 5000))
+        .getText();
+
+      if (successSonner === login.expected) {
+        login.actual = login.expected;
+        login.status = "PASS";
+      }
 
       await driver.sleep(500);
 
@@ -123,11 +140,28 @@ require("chromedriver");
         await driver.wait(until.elementIsVisible(item), 1000);
       }
     } catch (error) {
-      console.error("Test failed: " + error);
+      login.status = "FAIL";
+      login.actual = error.toString();
+      console.error(`Expected: ${login.expected}, Actual: ${error}`);
     } finally {
       driver.quit();
     }
   }
 
-  await runAddToCartTests(testCase);
+  for (var testCase of testCases) {
+    await runAddToCartTests(testCase);
+  }
+
+  // Write results back to Excel file
+  try {
+    writeExcelFile(
+      excelFilePath,
+      testCases,
+      excelStructure,
+      "Add To Cart Test Result"
+    );
+    console.log("Tests completed. Results written to Excel file.");
+  } catch (error) {
+    console.error("Error writing to Excel file:", error);
+  }
 })();
