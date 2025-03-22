@@ -45,11 +45,11 @@ async function runAddVoucherSuccess() {
         console.log("Trang chủ đã hiển thị thành công.");
 
         //Add product 
-        let product = await driver.findElement(By.xpath("/html/body/div/div/main/main/div[2]/div/section/div/a[1]/div/img"));
+        let product = await driver.findElement(By.xpath("/html/body/div/div/main/main/div[2]/div/section/div/a[1]"));
         product.click();
         await driver.sleep(1000);
 
-        // Verify that product's detail page is visible successfully
+        // Verify that product page is visible successfully
         await driver.wait(until.elementLocated(By.xpath("//button[contains(text(), 'Thêm vào giỏ hàng')]")), 5000);
         console.log("Trang sản phẩm đã hiển thị đầy đủ.");
 
@@ -72,6 +72,10 @@ async function runAddVoucherSuccess() {
         let cartBtn = await driver.findElement(By.xpath("/html/body/div/div/header/div/div[3]/a/button"));
         cartBtn.click();
         await driver.sleep(1000);
+
+        //Verify cart page is visible successfully
+        await driver.wait(until.elementLocated(By.xpath("//button[contains(text(), 'Tiến hành thanh toán')]")), 5000);
+        console.log("Nút thanh toán đã xuất hiện.");
 
         //Select the product you want to checkout 
         let selectBox = await driver.findElement(By.xpath("/html/body/div/div/main/div/div/div[1]/div/div[1]/button"));
@@ -173,7 +177,7 @@ async function runAddVoucherTest1() {
         console.log("Trang chủ đã hiển thị thành công.");
 
         //Add product 
-        let product = await driver.findElement(By.xpath("/html/body/div/div/main/main/div[2]/div/section/div/a[1]/div/img"));
+        let product = await driver.findElement(By.xpath("/html/body/div/div/main/main/div[2]/div/section/div/a[1]"));
         product.click();
         await driver.sleep(1000);
 
@@ -200,6 +204,10 @@ async function runAddVoucherTest1() {
         let cartBtn = await driver.findElement(By.xpath("/html/body/div/div/header/div/div[3]/a/button"));
         cartBtn.click();
         await driver.sleep(1000);
+
+        //Verify cart page is visible successfully
+        await driver.wait(until.elementLocated(By.xpath("//button[contains(text(), 'Tiến hành thanh toán')]")), 5000);
+        console.log("Nút thanh toán đã xuất hiện.");
 
         //Select the product you want to checkout 
         let selectBox = await driver.findElement(By.xpath("/html/body/div/div/main/div/div/div[1]/div/div[1]/button"));
@@ -301,7 +309,7 @@ async function runAddExpiredVoucher() {
         console.log("Trang chủ đã hiển thị thành công.");
 
         //Add product 
-        let product = await driver.findElement(By.xpath("/html/body/div/div/main/main/div[2]/div/section/div/a[1]/div/img"));
+        let product = await driver.findElement(By.xpath("/html/body/div/div/main/main/div[2]/div/section/div/a[1]"));
         product.click();
         await driver.sleep(1000);
 
@@ -328,6 +336,10 @@ async function runAddExpiredVoucher() {
         let cartBtn = await driver.findElement(By.xpath("/html/body/div/div/header/div/div[3]/a/button"));
         cartBtn.click();
         await driver.sleep(1000);
+
+        //Verify cart page is visible successfully
+        await driver.wait(until.elementLocated(By.xpath("//button[contains(text(), 'Tiến hành thanh toán')]")), 5000);
+        console.log("Nút thanh toán đã xuất hiện.");
 
         //Select the product you want to checkout 
         let selectBox = await driver.findElement(By.xpath("/html/body/div/div/main/div/div/div[1]/div/div[1]/button"));
@@ -385,8 +397,6 @@ async function runAddExpiredVoucher() {
     }
 
 }
-
-
 
 
 async function runTests() {
