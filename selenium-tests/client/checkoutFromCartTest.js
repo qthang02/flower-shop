@@ -1,65 +1,33 @@
 const { Builder, Browser, By, until } = require("selenium-webdriver");
+const path = require("path");
+const { readExcelFile, writeExcelFile } = require("../util/excelUtils");
 require("chromedriver");
 
 (async function checkoutFromCartTests() {
-  const excelStructure = { id: "ID", summary: "Summary", expected: "Expected result", actual: "Actual result", status: "Pass/Fail" };
+  const excelStructure = {
+    id: "ID",
+    firstName: "First name",
+    lastName: "Last name",
+    phone: "Phone",
+    address: "Address",
+    email: "Email",
+    password: "Password",
+    note: "Note",
+    summary: "Summary",
+    expected: "Expected result",
+    actual: "Actual result",
+    status: "Pass/Fail",
+  };
 
-  const testCases = [
-    {
-      firstName: "Quoc Thang",
-      lastName: "Nguyen",
-      phone: "0813256124",
-      email: "nguyenquocthang909@gmail.com",
-      address: "201 Sư Vạn Hạnh",
-      password: "Aa@123456",
-      note: "Giao hàng cẩn thận",
-    },
-    {
-      firstName: "",
-      lastName: "Nguyen",
-      phone: "0813256124",
-      email: "nguyenquocthang909@gmail.com",
-      address: "201 Sư Vạn Hạnh",
-      password: "Aa@123456",
-      note: "Giao hàng cẩn thận",
-    },
-    {
-      firstName: "Quoc Thang",
-      lastName: "",
-      phone: "0813256124",
-      email: "nguyenquocthang909@gmail.com",
-      address: "201 Sư Vạn Hạnh",
-      password: "Aa@123456",
-      note: "Giao hàng cẩn thận",
-    },
-    {
-      firstName: "Quoc Thang",
-      lastName: "Nguyen",
-      phone: "",
-      email: "nguyenquocthang909@gmail.com",
-      address: "201 Sư Vạn Hạnh",
-      password: "Aa@123456",
-      note: "Giao hàng cẩn thận",
-    },
-    {
-      firstName: "Quoc Thang",
-      lastName: "Nguyen",
-      phone: "0813256124",
-      email: "nguyenquocthang909@gmail.com",
-      address: "",
-      password: "Aa@123456",
-      note: "Giao hàng cẩn thận",
-    },
-    {
-      firstName: "Quoc Thang",
-      lastName: "Nguyen",
-      phone: "0813256124",
-      email: "nguyenquocthang909@gmail.com",
-      address: "201 Sư Vạn Hạnh",
-      password: "Aa@123456",
-      note: "",
-    },
-  ];
+  const excelFilePath = path.join(__dirname, "checkoutFromCartTest.xlsx");
+  let testCases = [];
+
+  try {
+    testCases = readExcelFile(excelFilePath, excelStructure);
+  } catch (error) {
+    console.error("Error reading Excel file:", error);
+    return;
+  }
 
   async function runCheckoutFromCartTests(user) {
     let driver = await new Builder().forBrowser(Browser.CHROME).build();
@@ -68,6 +36,7 @@ require("chromedriver");
       driver.manage().window().maximize();
 
       await driver.get("http://localhost:4200/login");
+      console.log("Testing: " + user.summary);
 
       await driver.sleep(500);
 
@@ -78,10 +47,7 @@ require("chromedriver");
       );
 
       await emailField.sendKeys(user.email);
-      await driver.sleep(500); // Add delay after entering email
-
       await passwordField.sendKeys(user.password);
-      await driver.sleep(500); // Add delay after entering password
 
       // Submit the login form
       await submitButton.click();
@@ -208,23 +174,23 @@ require("chromedriver");
         By.css("button[type='submit']")
       );
 
-      firstName.sendKeys(user.firstName);
-      await driver.sleep(500);
+      firstName.sendKeys(user.firstName ?? "");
+      await driver.sleep(250);
 
-      lastName.sendKeys(user.lastName);
-      await driver.sleep(500);
+      lastName.sendKeys(user.lastName ?? "");
+      await driver.sleep(250);
 
-      email.sendKeys(user.email);
-      await driver.sleep(500);
+      email.sendKeys(user.email ?? "");
+      await driver.sleep(250);
 
-      phone.sendKeys(user.phone);
-      await driver.sleep(500);
+      phone.sendKeys(user.phone ?? "");
+      await driver.sleep(250);
 
-      address.sendKeys(user.address);
-      await driver.sleep(500);
+      address.sendKeys(user.address ?? "");
+      await driver.sleep(250);
 
-      note.sendKeys(user.note);
-      await driver.sleep(500);
+      note.sendKeys(user.note ?? "");
+      await driver.sleep(250);
 
       await paymentMethods[paymentMethodRNG].click();
       const couponValidDate = coupons[couponRNG].findElement(
@@ -242,21 +208,39 @@ require("chromedriver");
         await driver.sleep(1000);
       }
 
-      await driver.wait(
-        until.elementTextIs(
-          driver.findElement(sonner),
-          "Create order success!"
-        ),
-        1000
-      );
+      const successSonner = await driver
+        .wait(until.elementIsVisible(driver.findElement(sonner), 1000))
+        .getText();
+
+      if (successSonner === user.expected) {
+        user.actual = user.expected;
+        user.status = "PASS";
+      }
     } catch (error) {
-      console.error("Test failed: " + error);
+      user.status = "FAIL";
+      user.actual = error.toString();
+      console.error(`Expected: ${user.expected}, Actual: ${error}`);
     } finally {
       driver.quit();
     }
   }
 
+
+  // await runCheckoutFromCartTests(testCases[0]);
   for (const testCase of testCases) {
     await runCheckoutFromCartTests(testCase);
+  }
+
+  // Write results back to Excel file
+  try {
+    writeExcelFile(
+      excelFilePath,
+      testCases,
+      excelStructure,
+      "Checkout Cart Test Result"
+    );
+    console.log("Tests completed. Results written to Excel file.");
+  } catch (error) {
+    console.error("Error writing to Excel file:", error);
   }
 })();
