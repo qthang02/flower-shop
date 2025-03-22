@@ -20,6 +20,7 @@ async function runAddVoucherSuccess() {
 
     let driver = await new Builder().forBrowser('chrome').build();
     try {
+        driver.manage().window().maximize();
         // Navigate to the login page
         await driver.get('http://localhost:4200/login');
         console.log("testcase: " + testCase.description);
@@ -152,6 +153,7 @@ async function runAddVoucherTest1() {
 
     let driver = await new Builder().forBrowser('chrome').build();
     try {
+        driver.manage().window().maximize();
         // Navigate to the login page
         await driver.get('http://localhost:4200/login');
         console.log("testcase: " + testCase.description);
@@ -284,6 +286,7 @@ async function runAddExpiredVoucher() {
 
     let driver = await new Builder().forBrowser('chrome').build();
     try {
+        driver.manage().window().maximize();
         // Navigate to the login page
         await driver.get('http://localhost:4200/login');
         console.log("testcase: " + testCase.description);
