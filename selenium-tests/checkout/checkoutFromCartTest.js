@@ -1,6 +1,5 @@
 const { Builder, Browser, By, until } = require("selenium-webdriver");
 const path = require("path");
-const { readExcelFile, writeExcelFile } = require("../util/excelUtils");
 require("chromedriver");
 
 (async function checkoutFromCartTests() {
@@ -174,22 +173,22 @@ require("chromedriver");
         By.css("button[type='submit']")
       );
 
-      firstName.sendKeys(user.firstName ?? "");
+      firstName.sendKeys(user.firstName);
       await driver.sleep(250);
 
-      lastName.sendKeys(user.lastName ?? "");
+      lastName.sendKeys(user.lastName);
       await driver.sleep(250);
 
-      email.sendKeys(user.email ?? "");
+      email.sendKeys(user.email);
       await driver.sleep(250);
 
-      phone.sendKeys(user.phone ?? "");
+      phone.sendKeys(user.phone);
       await driver.sleep(250);
 
-      address.sendKeys(user.address ?? "");
+      address.sendKeys(user.address);
       await driver.sleep(250);
 
-      note.sendKeys(user.note ?? "");
+      note.sendKeys(user.note);
       await driver.sleep(250);
 
       await paymentMethods[paymentMethodRNG].click();
@@ -224,7 +223,6 @@ require("chromedriver");
       driver.quit();
     }
   }
-
 
   // await runCheckoutFromCartTests(testCases[0]);
   for (const testCase of testCases) {
