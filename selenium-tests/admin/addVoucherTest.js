@@ -156,6 +156,15 @@ require('chromedriver');
             await driver.sleep(1500);
 
             //Navigate to admin page 
+            await driver.get('http://localhost:3000/');
+            await driver.sleep(1000);
+
+            //Click on "Khuyến mãi" button 
+            let voucherAdminBtn = await driver.findElement(By.xpath("/html/body/div/div/aside/div/div/ul/li[6]/span/a"));
+            voucherAdminBtn.click();
+            await driver.sleep(1500);
+
+            //Navigate to admin page 
             await driver.get('http://localhost:3000/vouchers');
             await driver.sleep(3000);
 
