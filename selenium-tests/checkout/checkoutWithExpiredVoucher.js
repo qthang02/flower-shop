@@ -1,18 +1,19 @@
 const { Builder, Browser, By, until } = require("selenium-webdriver");
+const chrome = require("selenium-webdriver/chrome");
 const path = require("path");
 const ExcelJS = require("exceljs"); // Thêm thư viện ExcelJS
 
 const assert = require("assert");
 require("chromedriver");
 
-(async function checkoutFromCartTest() {
+(async function checkoutFromExpiredVoucher() {
   // Intialize Excel functions
   const excelFilePath = path.join("../test-cases.xlsx");
   const workbook = new ExcelJS.Workbook();
   const excel = await workbook.xlsx.readFile(excelFilePath);
   const sheet = excel.getWorksheet("Checkout");
 
-  const row = sheet.getRow(3);
+  const row = sheet.getRow(4);
 
   // Create test case
   let testCase = {
@@ -44,7 +45,10 @@ require("chromedriver");
   };
 
   async function runTest(testCase) {
-    let driver = await new Builder().forBrowser(Browser.CHROME).build();
+    let driver = await new Builder()
+      .forBrowser(Browser.CHROME)
+      //   .setChromeOptions(new chrome.Options().addArguments("--headless"))
+      .build();
 
     console.log(testCase);
 
@@ -102,12 +106,13 @@ require("chromedriver");
 
       await driver.sleep(500);
 
-      // Get the first from bottom up if multiple sonners appear
-      const sonner = By.css("li.group > div:nth-child(2) > div:nth-child(1)");
+      const addToCartSuccess = By.css(
+        "li.group > div:nth-child(2) > div:nth-child(1)"
+      );
 
       await driver.wait(
         until.elementTextIs(
-          await driver.findElement(sonner),
+          await driver.findElement(addToCartSuccess),
           "Thêm sản phẩm vào giỏ hàng thành công!"
         ),
         1000
@@ -153,10 +158,15 @@ require("chromedriver");
 
       await driver.sleep(500);
 
+      const nav = await driver.findElement(By.css("nav.py-2"));
+      const proceedToCheckoutButton = await driver.findElement(
+        By.css("button[class*='bg-green-900']")
+      );
+
+      await driver.actions().scroll(0, 0, 0, 0, nav).perform();
+
       await driver
-        .findElement(
-          By.xpath('//*[@id="root"]/div/main/div/div/div[2]/div/button[1]')
-        )
+        .wait(until.elementIsVisible(proceedToCheckoutButton))
         .click();
 
       // Checkout
@@ -168,6 +178,14 @@ require("chromedriver");
       const email = await driver.findElement(By.id("email"));
       const address = await driver.findElement(By.id("address"));
       const note = await driver.findElement(By.id("note"));
+
+      await driver.sleep(1000);
+
+      const coupons = await driver.findElements(
+        By.css(
+          "div.space-y-6.h-full > div:nth-child(2) > div > div[class$='hover:bg-gray-100']"
+        )
+      );
 
       const payButton = await driver.findElement(
         By.css("button[type='submit']")
@@ -182,45 +200,41 @@ require("chromedriver");
 
       await driver.sleep(500);
 
-      // Select a random payment method
-      const paymentMethodRNG = Math.floor(
-        Math.random() * (paymentMethods.length - 1)
-      );
-      await paymentMethods[paymentMethodRNG].click();
+      // Select an invalid coupon
+      for (const coupon of coupons) {
+        const couponValidDate = coupon.findElement(
+          By.css("div.p-6.pt-0.pb-0.flex.justify-between.items-center > button")
+        );
 
-      // Select a valid coupon
-      const couponRNG = Math.floor(Math.random() * coupons.length);
-      const couponValidDate = coupons[couponRNG].findElement(
-        By.css("div.p-6.pt-0.pb-0.flex.justify-between.items-center > button")
-      );
-
-      if ((await couponValidDate.getText()).includes("2025")) {
-        await coupons[couponRNG].click();
+        if ((await couponValidDate.getText()).includes("2024")) {
+          await coupon.click();
+        }
       }
 
       await driver.sleep(1000);
 
-      // Check if coupon reduces price to 0 or lower
-      if ((await totalPrice.getText()).startsWith("-")) {
-        console.error("Total price shouldn't be lower than 0");
-      } else {
-        await payButton.click();
-      }
-      await driver.sleep(1000);
+      await payButton.click();
 
-      const successSonner = await driver
-        .wait(until.elementIsVisible(driver.findElement(sonner), 2000))
-        .getText();
+      await driver.sleep(500);
 
-      const successDialog = await driver.wait(
-        until.elementIsVisible(
-          driver.findElement(By.css("div[role='dialog']"))
-        ),
-        2000
+      const transactionFailSonner = By.css("li.group > div:nth-child(2) > div:nth-child(1)");
+      const voucherFailSonner = By.css(
+        "li.group:nth-child(2) > div:nth-child(2) > div:nth-child(1)"
       );
 
-      assert.equal(successSonner, "Create order success!");
-      assert.notEqual(successDialog, undefined);
+      const transactionFailText = await driver.findElement(transactionFailSonner);
+      const voucherFailText = await driver.findElement(voucherFailSonner);
+
+      await driver
+        .actions({ async: true })
+        .move({ origin: transactionFailText })
+        .perform();
+
+      assert.equal(
+        await voucherFailText.getText(),
+        "Voucher đã hết hạn, Đặt hàng thất bại!"
+      );
+      assert.equal(await transactionFailText.getText(), "Create order failed!");
 
       // Successful test if assertion does not throw error
       row.getCell(`N`).value = "PASS";

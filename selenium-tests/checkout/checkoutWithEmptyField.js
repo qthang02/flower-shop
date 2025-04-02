@@ -5,14 +5,32 @@ const ExcelJS = require("exceljs"); // Thêm thư viện ExcelJS
 const assert = require("assert");
 require("chromedriver");
 
-(async function checkoutFromCartTest() {
+(async function checkoutFromExpiredVoucher() {
   // Intialize Excel functions
   const excelFilePath = path.join("../test-cases.xlsx");
   const workbook = new ExcelJS.Workbook();
   const excel = await workbook.xlsx.readFile(excelFilePath);
   const sheet = excel.getWorksheet("Checkout");
 
-  const row = sheet.getRow(3);
+  const rows = sheet.getRows(5, 7);
+
+  let testCases = [];
+  for (const row of rows) {
+    // console.log(row.getCell("A").value);
+    testCases.push({
+      id: row.getCell("A").value,
+      summary: row.getCell("B").value,
+      email: row.getCell("E").value,
+      password: row.getCell("F").value,
+      firstName: row.getCell("G").value,
+      lastName: row.getCell("H").value,
+      phone: row.getCell("I").value,
+      address: row.getCell("J").value,
+      note: row.getCell("K").value,
+      expected: row.getCell("L").value,
+      row: row.number,
+    });
+  }
 
   // Create test case
   let testCase = {
@@ -28,19 +46,6 @@ require("chromedriver");
     expected: null,
     actual: null,
     status: null,
-  };
-
-  testCase = {
-    id: row.getCell("A").value,
-    summary: row.getCell("B").value,
-    email: row.getCell("E").value,
-    password: row.getCell("F").value,
-    firstName: row.getCell("G").value,
-    lastName: row.getCell("H").value,
-    phone: row.getCell("I").value,
-    address: row.getCell("J").value,
-    note: row.getCell("K").value,
-    expected: row.getCell("L").value,
   };
 
   async function runTest(testCase) {
@@ -102,12 +107,13 @@ require("chromedriver");
 
       await driver.sleep(500);
 
-      // Get the first from bottom up if multiple sonners appear
-      const sonner = By.css("li.group > div:nth-child(2) > div:nth-child(1)");
+      const addToCartSuccess = By.css(
+        "li.group > div:nth-child(2) > div:nth-child(1)"
+      );
 
       await driver.wait(
         until.elementTextIs(
-          await driver.findElement(sonner),
+          await driver.findElement(addToCartSuccess),
           "Thêm sản phẩm vào giỏ hàng thành công!"
         ),
         1000
@@ -169,70 +175,69 @@ require("chromedriver");
       const address = await driver.findElement(By.id("address"));
       const note = await driver.findElement(By.id("note"));
 
+      const totalPrice = await driver.findElement(
+        By.css("div[class='flex justify-between font-semibold']")
+      );
+
       const payButton = await driver.findElement(
         By.css("button[type='submit']")
       );
 
-      firstName.sendKeys(testCase.firstName);
-      lastName.sendKeys(testCase.lastName);
-      email.sendKeys(testCase.email);
-      phone.sendKeys(testCase.phone);
-      address.sendKeys(testCase.address);
-      note.sendKeys(testCase.note);
+      firstName.sendKeys(testCase.firstName ?? "");
+      lastName.sendKeys(testCase.lastName ?? "");
+      if (testCase.row === 7) {
+        email.sendKeys("");
+      } else if (testCase.row === 8) {
+        email.sendKeys("invalid-email");
+      } else email.sendKeys(testCase.email);
+      phone.sendKeys(testCase.phone ?? "");
+      address.sendKeys(testCase.address ?? "");
+      note.sendKeys(testCase.note ?? "");
 
       await driver.sleep(500);
 
-      // Select a random payment method
-      const paymentMethodRNG = Math.floor(
-        Math.random() * (paymentMethods.length - 1)
-      );
-      await paymentMethods[paymentMethodRNG].click();
+      await payButton.click();
 
-      // Select a valid coupon
-      const couponRNG = Math.floor(Math.random() * coupons.length);
-      const couponValidDate = coupons[couponRNG].findElement(
-        By.css("div.p-6.pt-0.pb-0.flex.justify-between.items-center > button")
-      );
+      await driver.sleep(500);
 
-      if ((await couponValidDate.getText()).includes("2025")) {
-        await coupons[couponRNG].click();
-      }
+      let formError;
 
-      await driver.sleep(1000);
+      if (testCase.row !== 11) {
+        formError = await driver.findElement(
+          By.css("p.text-sm.font-medium.text-red-500")
+        );
 
-      // Check if coupon reduces price to 0 or lower
-      if ((await totalPrice.getText()).startsWith("-")) {
-        console.error("Total price shouldn't be lower than 0");
+        assert.equal(await formError.getText(), testCase.expected);
       } else {
-        await payButton.click();
+        const sonnerElement = By.css(
+          "li.group:nth-child(2) > div:nth-child(2) > div:nth-child(1)"
+        );
+
+        await driver
+          .actions({ async: true })
+          .move({ origin: sonnerElement })
+          .perform();
+
+        // Get the first from bottom up if multiple sonners appear
+        const sonner = await driver.wait(
+          until.elementIsVisible(await driver.findElement(sonnerElement)),
+          2000
+        );
+
+        assert.equal(await sonner.getText(), testCase.expected);
       }
-      await driver.sleep(1000);
-
-      const successSonner = await driver
-        .wait(until.elementIsVisible(driver.findElement(sonner), 2000))
-        .getText();
-
-      const successDialog = await driver.wait(
-        until.elementIsVisible(
-          driver.findElement(By.css("div[role='dialog']"))
-        ),
-        2000
-      );
-
-      assert.equal(successSonner, "Create order success!");
-      assert.notEqual(successDialog, undefined);
 
       // Successful test if assertion does not throw error
-      row.getCell(`N`).value = "PASS";
-      row.getCell(`M`).value = testCase.expected;
-      sheet.getRow(row.number).commit();
+      sheet.getRow(testCase.row).getCell(`N`).value = "PASS";
+      sheet.getRow(testCase.row).getCell(`M`).value = testCase.expected;
+      sheet.getRow(testCase.row).commit();
       workbook.xlsx.writeFile(excelFilePath);
 
       console.log("Test completed. Result is written to Excel file.");
     } catch (error) {
-      row.getCell(`N`).value = "FAIL";
-      row.getCell(`M`).value = error.toString();
-      sheet.getRow(row.number).commit();
+      sheet.getRow(testCase.row).getCell(`N`).value = "FAIL";
+      sheet.getRow(testCase.row).getCell(`M`).value = error.toString();
+      sheet.getRow(testCase.row).commit();
       workbook.xlsx.writeFile(excelFilePath);
       console.error(`Expected: ${testCase.expected}, Actual: ${error}`);
     } finally {
@@ -240,5 +245,7 @@ require("chromedriver");
     }
   }
 
-  await runTest(testCase);
+  //   for (const testCase of testCases) {
+  await runTest(testCases[testCases.length - 1]);
+  //   }
 })();
