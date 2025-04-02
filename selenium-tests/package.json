@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@types/selenium-webdriver": "^4.1.28",
-    "chromedriver": "^133.0.3",
+    "chromedriver": "^134.0.5",
     "exceljs": "^4.4.0",
     "selenium-webdriver": "^4.27.0",
     "xlsx": "^0.18.5"

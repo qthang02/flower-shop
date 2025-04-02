@@ -1,5 +1,4 @@
 const { Builder, Browser, By, until } = require("selenium-webdriver");
-const chrome = require("selenium-webdriver/chrome");
 const path = require("path");
 const ExcelJS = require("exceljs"); // Thêm thư viện ExcelJS
 
@@ -47,7 +46,6 @@ require("chromedriver");
   async function runTest(testCase) {
     let driver = await new Builder()
       .forBrowser(Browser.CHROME)
-      //   .setChromeOptions(new chrome.Options().addArguments("--headless"))
       .build();
 
     console.log(testCase);
@@ -217,12 +215,16 @@ require("chromedriver");
 
       await driver.sleep(500);
 
-      const transactionFailSonner = By.css("li.group > div:nth-child(2) > div:nth-child(1)");
+      const transactionFailSonner = By.css(
+        "li.group > div:nth-child(2) > div:nth-child(1)"
+      );
       const voucherFailSonner = By.css(
         "li.group:nth-child(2) > div:nth-child(2) > div:nth-child(1)"
       );
 
-      const transactionFailText = await driver.findElement(transactionFailSonner);
+      const transactionFailText = await driver.findElement(
+        transactionFailSonner
+      );
       const voucherFailText = await driver.findElement(voucherFailSonner);
 
       await driver
