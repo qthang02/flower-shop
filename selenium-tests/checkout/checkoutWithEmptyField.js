@@ -158,11 +158,7 @@ require("chromedriver");
       const email = await driver.findElement(By.id("email"));
       const address = await driver.findElement(By.id("address"));
       const note = await driver.findElement(By.id("note"));
-
-      const totalPrice = await driver.findElement(
-        By.css("div[class='flex justify-between font-semibold']")
-      );
-
+      
       const payButton = await driver.findElement(
         By.css("button[type='submit']")
       );
