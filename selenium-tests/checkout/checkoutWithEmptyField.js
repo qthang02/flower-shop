@@ -12,11 +12,11 @@ require("chromedriver");
   const excel = await workbook.xlsx.readFile(excelFilePath);
   const sheet = excel.getWorksheet("Checkout");
 
+  // Get 7 rows starting from row 5
   const rows = sheet.getRows(5, 7);
 
   let testCases = [];
   for (const row of rows) {
-    // console.log(row.getCell("A").value);
     testCases.push({
       id: row.getCell("A").value,
       summary: row.getCell("B").value,
@@ -31,22 +31,6 @@ require("chromedriver");
       row: row.number,
     });
   }
-
-  // Create test case
-  let testCase = {
-    id: null,
-    summary: null,
-    email: null,
-    password: null,
-    firstName: null,
-    lastName: null,
-    phone: null,
-    address: null,
-    note: null,
-    expected: null,
-    actual: null,
-    status: null,
-  };
 
   async function runTest(testCase) {
     let driver = await new Builder().forBrowser(Browser.CHROME).build();
