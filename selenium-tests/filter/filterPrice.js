@@ -5,7 +5,7 @@ const ExcelJS = require("exceljs"); // Thêm thư viện ExcelJS
 const assert = require("assert");
 require("chromedriver");
 
-(async function filterKeyword() {
+(async function filterPrice() {
   // Intialize Excel functions
   const excelFilePath = path.join("../test-cases.xlsx");
   const workbook = new ExcelJS.Workbook();
