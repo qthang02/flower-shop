@@ -158,7 +158,7 @@ require("chromedriver");
       const email = await driver.findElement(By.id("email"));
       const address = await driver.findElement(By.id("address"));
       const note = await driver.findElement(By.id("note"));
-      
+
       const payButton = await driver.findElement(
         By.css("button[type='submit']")
       );
@@ -189,8 +189,9 @@ require("chromedriver");
 
         assert.equal(await formError.getText(), testCase.expected);
       } else {
-        const sonnerElement = By.css(
-          "li.group:nth-child(2) > div:nth-child(2) > div:nth-child(1)"
+        // Get the first from bottom up if multiple sonners appear
+        const sonnerElement = await driver.findElement(
+          By.css("li.group:nth-child(2) > div:nth-child(2) > div:nth-child(1)")
         );
 
         await driver
@@ -198,13 +199,7 @@ require("chromedriver");
           .move({ origin: sonnerElement })
           .perform();
 
-        // Get the first from bottom up if multiple sonners appear
-        const sonner = await driver.wait(
-          until.elementIsVisible(await driver.findElement(sonnerElement)),
-          2000
-        );
-
-        assert.equal(await sonner.getText(), testCase.expected);
+        assert.equal(await sonnerElement.getText(), testCase.expected);
       }
 
       // Successful test if assertion does not throw error
@@ -225,7 +220,7 @@ require("chromedriver");
     }
   }
 
-  //   for (const testCase of testCases) {
-  await runTest(testCases[testCases.length - 1]);
-  //   }
+  for (const testCase of testCases) {
+    await runTest(testCase);
+  }
 })();

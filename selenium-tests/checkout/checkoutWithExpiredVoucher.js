@@ -44,9 +44,7 @@ require("chromedriver");
   };
 
   async function runTest(testCase) {
-    let driver = await new Builder()
-      .forBrowser(Browser.CHROME)
-      .build();
+    let driver = await new Builder().forBrowser(Browser.CHROME).build();
 
     console.log(testCase);
 
