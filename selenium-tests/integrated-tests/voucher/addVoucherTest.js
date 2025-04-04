@@ -1,6 +1,6 @@
 const { Builder, By, until } = require('selenium-webdriver');
 const path = require("path");
-const { readExcelFile, writeExcelFile } = require("../util/excelUtils");
+const { readExcelFile, writeExcelFile } = require("../../util/excelUtils");
 require('chromedriver');
 
 
